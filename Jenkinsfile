@@ -59,8 +59,14 @@ pipeline {
                 start "" /B java -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1
 
                 timeout /t 15 > nul
+                
+                echo Checking application logs...
+
+				type app.log | findstr "Started"
 
                 echo Application Started Successfully.
+                
+                
                 '''
             }
         }
