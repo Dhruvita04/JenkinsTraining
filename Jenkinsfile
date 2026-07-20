@@ -54,16 +54,16 @@ pipeline {
                 bat '''
                 @echo off
 
-                echo Starting Spring Boot Application...
 
-                start "" /B java -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1
-
-                timeout /t 15 > nul
-                
-                echo Checking application logs...
-
-				type app.log | findstr "Started"
-
+		        echo Starting Spring Boot Application...
+		
+		        start "" /B java ^
+		        -Dspring.datasource.username=%DB_USERNAME% ^
+		        -Dspring.datasource.password=%DB_PASSWORD% ^
+		        -jar target\\jenkins-0.0.1-SNAPSHOT.jar ^
+		        > app.log 2>&1
+		
+		        timeout /t 20 > nul
                 echo Application Started Successfully.
                 
                 
