@@ -52,7 +52,7 @@ pipeline {
                 @echo off
                 echo Starting Spring Boot Application...
 
-                start "SpringBootApp" cmd /c java -jar target\\*.jar
+                start "SpringBootApp" cmd /c java -jar target\\*.jar"
 
                 timeout /t 10 > nul
 
