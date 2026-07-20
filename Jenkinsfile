@@ -14,13 +14,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout Source Code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/Dhruvita04/JenkinsTraining.git'
-            }
-        }
-
         stage('Compile') {
             steps {
                 bat 'mvn clean compile'
@@ -33,14 +26,24 @@ pipeline {
             }
         }
 
+        stage('Verify Artifact') {
+            steps {
+                bat 'dir target'
+            }
+        }
+
         stage('Stop Existing Application') {
             steps {
                 bat '''
                 @echo off
+
+                echo Checking for application running on port 2026...
+
                 for /f "tokens=5" %%a in ('netstat -ano ^| findstr :2026') do (
-                    echo Stopping existing application...
+                    echo Stopping process %%a
                     taskkill /PID %%a /F
                 )
+
                 exit /b 0
                 '''
             }
@@ -50,11 +53,12 @@ pipeline {
             steps {
                 bat '''
                 @echo off
+
                 echo Starting Spring Boot Application...
 
-                start "SpringBootApp" cmd /c java -jar target\\*.jar"
+                start "" /B java -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1
 
-                timeout /t 10 > nul
+                timeout /t 15 > nul
 
                 echo Application Started Successfully.
                 '''
