@@ -50,26 +50,25 @@ pipeline {
         }
 
         stage('Deploy Application') {
-			    steps {
-			        bat '''
-			        @echo off
-			
-			        echo Starting Spring Boot Application...
-			
-			        echo DB USER: %DB_USERNAME%
-			
-			        start "SpringBootApp" cmd /c "java -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1"
-			
-			        timeout /t 30 > nul
-			
-			        echo Checking application status...
-			
-			        netstat -ano | findstr :2026
-			
-			        echo Application Started Successfully.
-			        '''
-			    }
-			}
+            steps {
+                bat '''
+                @echo off
+
+                echo Starting Spring Boot Application...
+
+                echo DB USER: %DB_USERNAME%
+
+                start "SpringBootApp" cmd /c "java -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1"
+
+                timeout /t 30 > nul
+
+                echo Checking application status...
+
+                netstat -ano | findstr :2026
+
+                echo Application Started Successfully.
+                '''
+            }
         }
 
     }
