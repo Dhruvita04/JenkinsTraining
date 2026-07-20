@@ -56,14 +56,14 @@ pipeline {
 
 
 		        echo Starting Spring Boot Application...
+
+		        start "SpringBootApp" cmd /c "java -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1"
 		
-		        start "" /B java ^
-		        -Dspring.datasource.username=%DB_USERNAME% ^
-		        -Dspring.datasource.password=%DB_PASSWORD% ^
-		        -jar target\\jenkins-0.0.1-SNAPSHOT.jar ^
-		        > app.log 2>&1
+		        timeout /t 30 > nul
 		
-		        timeout /t 20 > nul
+		        echo Checking application status...
+		
+		        netstat -ano | findstr :2026
                 echo Application Started Successfully.
                 
                 
