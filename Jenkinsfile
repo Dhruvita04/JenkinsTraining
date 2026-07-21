@@ -18,6 +18,19 @@ pipeline {
             }
         }
 
+        stage('Stop Existing Application') {
+            steps {
+                bat '''
+                @echo off
+                for /f "tokens=5" %%a in ('netstat -ano ^| findstr /R /C:":2026 .*LISTENING"') do (
+                    echo Stopping existing application PID %%a...
+                    taskkill /PID %%a /F
+                )
+                exit /b 0
+                '''
+            }
+        }
+
         stage('Compile') {
             steps {
                 bat 'mvn clean compile'
@@ -30,35 +43,22 @@ pipeline {
             }
         }
 
-        stage('Stop Existing Application') {
+        stage('Deploy Application') {
             steps {
                 bat '''
                 @echo off
-                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :2026') do (
-                    echo Stopping existing application PID %%a...
-                    taskkill /PID %%a /F
-                )
-                exit /b 0
+                echo Starting Spring Boot Application...
+
+                set JENKINS_NODE_COOKIE=dontKillMe
+
+                start "SpringBootApp" /B cmd /c "java -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1"
+
+                ping 127.0.0.1 -n 11 > nul
+
+                echo Application Started Successfully.
                 '''
             }
         }
-
-        stage('Deploy Application') {
-    steps {
-        bat '''
-        @echo off
-        echo Starting Spring Boot Application...
-
-        set JENKINS_NODE_COOKIE=dontKillMe
-
-        start "SpringBootApp" /B cmd /c "java -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1"
-
-        ping 127.0.0.1 -n 11 > nul
-
-        echo Application Started Successfully.
-        '''
-    }
-}
     }
 
     post {
