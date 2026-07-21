@@ -1,9 +1,8 @@
 pipeline {
-
     agent any
 
     tools {
-        jdk 'JDK-25'
+        jdk 'Jdk-25'
         maven 'Maven-3.9'
     }
 
@@ -13,6 +12,11 @@ pipeline {
     }
 
     stages {
+        stage('Checkout Source Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/prathamesh-codes/billdesk-firstProject.git'
+            }
+        }
 
         stage('Compile') {
             steps {
@@ -26,63 +30,46 @@ pipeline {
             }
         }
 
-        stage('Verify Artifact') {
-            steps {
-                bat 'dir target'
-            }
-        }
-
         stage('Stop Existing Application') {
             steps {
                 bat '''
                 @echo off
-
-                echo Checking for application running on port 2026...
-
-                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :2026') do (
-                    echo Stopping process %%a
+                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :9095') do (
+                    echo Stopping existing application PID %%a...
                     taskkill /PID %%a /F
                 )
-
                 exit /b 0
                 '''
             }
         }
 
         stage('Deploy Application') {
-            steps {
-                bat '''
-                @echo off
+    steps {
+        bat '''
+        @echo off
+        echo Starting Spring Boot Application...
 
-                echo Starting Spring Boot Application...
+        :: Prevent Jenkins from terminating the application
+        set JENKINS_NODE_COOKIE=dontKillMe
 
-                echo DB USER: %DB_USERNAME%
+        :: Start the Spring Boot application in the background
+        start "" javaw -jar target\\LearningGIT-0.0.1-SNAPSHOT.jar > app.log 2>&1
 
-                start "SpringBootApp" cmd /c "java -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -jar target\\jenkins-0.0.1-SNAPSHOT.jar > app.log 2>&1"
+        :: Wait for application startup
+        ping 127.0.0.1 -n 11 > nul
 
-                timeout /t 30 > nul
-
-                echo Checking application status...
-
-                netstat -ano | findstr :2026
-
-                echo Application Started Successfully.
-                '''
-            }
-        }
-
+        echo Application Started Successfully.
+        '''
+    }
+}
     }
 
     post {
-
         success {
             echo 'Pipeline executed successfully.'
         }
-
         failure {
             echo 'Pipeline failed.'
         }
-
     }
-
 }
